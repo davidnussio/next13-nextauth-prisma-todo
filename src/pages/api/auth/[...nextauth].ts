@@ -12,6 +12,7 @@ export const authOptions: NextAuthOptions = {
   // This is a temporary fix for prisma client.
   // @see https://github.com/prisma/prisma/issues/16117
   adapter: PrismaAdapter(prisma),
+  debug: true,
   session: {
     strategy: "jwt",
   },
@@ -37,8 +38,8 @@ export const authOptions: NextAuthOptions = {
 
         // console.log("user", user);
         console.log("identifier", identifier);
-        console.log("url", url);
-        console.log("provider", provider);
+        console.log(url);
+        // console.log("provider", provider);
 
         // const templateId = user?.emailVerified
         //   ? process.env.POSTMARK_SIGN_IN_TEMPLATE
