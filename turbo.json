@@ -2,7 +2,15 @@
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "build": {
-      "outputs": [".next/**"]
+      "outputs": [".next/**"],
+      "inputs": [
+        "src/**",
+        "next.config.js",
+        "package.json",
+        "tsconfig.json",
+        "prisma/**",
+        "public/**"
+      ]
     },
     "dev": {
       "cache": false
@@ -10,6 +18,16 @@
 
     "lint": {
       "outputs": []
+    },
+
+    "start": {
+      "outputs": [],
+      "dependsOn": ["build"]
+    },
+
+    "e2e:test": {
+      "outputs": [],
+      "dependsOn": ["build"]
     }
   }
 }

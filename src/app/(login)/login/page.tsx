@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+
 import LoginButton from "~/app/login-button";
 import { getCurrentUser } from "~/server/common/get-server-auth-session";
+import LoginForm from "./login-form";
 
 // Login page
 export default async function LoginPage() {
@@ -18,6 +20,7 @@ export default async function LoginPage() {
       <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
         Login
       </h1>
+      <LoginForm />
       <LoginButton user={user} />
     </div>
   );

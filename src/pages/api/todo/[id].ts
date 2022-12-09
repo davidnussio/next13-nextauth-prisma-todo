@@ -61,11 +61,11 @@ export const api = () =>
     onNoMatch: (req, res) => {
       res.status(404).end("Page is not found");
     },
-  })
-    .use(useSession)
-    .use(useAuth);
+  }).use(useSession);
 
-const handler = api()
+export const authApi = () => api().use(useAuth);
+
+const handler = authApi()
   .use(
     validate(
       z.object({

@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { prisma } from "../../../server/db/client";
 
-import { api, validate } from "./[id]";
+import { authApi, validate } from "./[id]";
 
-const handler = api()
+const handler = authApi()
   .get(async (req, res) => {
     const userId = req.session?.user?.id;
 

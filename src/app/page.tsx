@@ -20,8 +20,7 @@ const Home = async () => {
             >
               <h3 className="text-2xl font-bold">Todo</h3>
               <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
+                Just the basics - Everything you need to do, here.
               </div>
             </Link>
           </div>
