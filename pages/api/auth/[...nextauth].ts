@@ -38,8 +38,8 @@ export const authOptions: NextAuthOptions = {
     //   clientSecret: process.env.GITHUB_SECRET,
     // }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     // TwitterProvider({
     //   clientId: process.env.TWITTER_ID,
