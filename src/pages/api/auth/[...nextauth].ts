@@ -1,11 +1,7 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
-import EmailProvider from "next-auth/providers/email"; // Prisma adapter for NextAuth, optional and can be removed
 import GoogleProvider from "next-auth/providers/google";
 
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-
 import { env } from "../../../env/server.mjs";
-import { prisma } from "../../../server/db/client";
 
 export const authOptions: NextAuthOptions = {
   // huh any! I know.
@@ -13,14 +9,14 @@ export const authOptions: NextAuthOptions = {
   // @see https://github.com/prisma/prisma/issues/16117
   // adapter: PrismaAdapter(prisma),
   debug: true,
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
-  },
-  jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+  // session: {
+  //   strategy: "jwt",
+  //   maxAge: 30 * 24 * 60 * 60, // 30 days
+  //   updateAge: 24 * 60 * 60, // 24 hours
+  // },
+  // jwt: {
+  //   maxAge: 30 * 24 * 60 * 60, // 30 days
+  // },
 
   // pages: {
   //   signIn: "/login",
@@ -74,41 +70,13 @@ export const authOptions: NextAuthOptions = {
     //   },
     // }),
   ],
+  theme: {
+    colorScheme: "light",
+  },
   callbacks: {
-    async session({ token, session }) {
-      console.log("session", token, session);
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.image = token.picture;
-      }
-
-      return session;
-    },
-    async jwt({ token, user }) {
+    async jwt({ token }) {
       token.userRole = "admin";
       return token;
-      // console.log("jwt", token, user, "email", token.email);
-      // const dbUser = await prisma.user.findFirst({
-      //   where: {
-      //     email: token.email,
-      //   },
-      // });
-
-      // console.log("dbUser", dbUser);
-
-      // if (!dbUser) {
-      //   token.id = user?.id;
-      //   return token;
-      // }
-
-      // return {
-      //   id: dbUser.id,
-      //   name: dbUser.name,
-      //   email: dbUser.email,
-      //   picture: dbUser.image,
-      // };
     },
   },
 };
