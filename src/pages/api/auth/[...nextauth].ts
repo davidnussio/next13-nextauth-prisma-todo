@@ -30,49 +30,49 @@ export const authOptions: NextAuthOptions = {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
-    EmailProvider({
-      from: process.env.SMTP_FROM,
-      sendVerificationRequest: async ({ identifier, url, provider }) => {
-        // const user = await prisma.user.findUnique({
-        //   where: {
-        //     email: identifier,
-        //   },
-        //   select: {
-        //     emailVerified: true,
-        //   },
-        // });
+    // EmailProvider({
+    //   from: process.env.SMTP_FROM,
+    //   sendVerificationRequest: async ({ identifier, url, provider }) => {
+    //     // const user = await prisma.user.findUnique({
+    //     //   where: {
+    //     //     email: identifier,
+    //     //   },
+    //     //   select: {
+    //     //     emailVerified: true,
+    //     //   },
+    //     // });
 
-        // console.log("user", user);
-        console.log("identifier", identifier);
-        console.log(url);
-        // console.log("provider", provider);
+    //     // console.log("user", user);
+    //     console.log("identifier", identifier);
+    //     console.log(url);
+    //     // console.log("provider", provider);
 
-        // const templateId = user?.emailVerified
-        //   ? process.env.POSTMARK_SIGN_IN_TEMPLATE
-        //   : process.env.POSTMARK_ACTIVATION_TEMPLATE;
-        // const result = await postmarkClient.sendEmailWithTemplate({
-        //   TemplateId: parseInt(templateId),
-        //   To: identifier,
-        //   From: provider.from,
-        //   TemplateModel: {
-        //     action_url: url,
-        //     product_name: siteConfig.name,
-        //   },
-        //   Headers: [
-        //     {
-        //       // Set this to prevent Gmail from threading emails.
-        //       // See https://stackoverflow.com/questions/23434110/force-emails-not-to-be-grouped-into-conversations/25435722.
-        //       Name: "X-Entity-Ref-ID",
-        //       Value: new Date().getTime() + "",
-        //     },
-        //   ],
-        // });
+    //     // const templateId = user?.emailVerified
+    //     //   ? process.env.POSTMARK_SIGN_IN_TEMPLATE
+    //     //   : process.env.POSTMARK_ACTIVATION_TEMPLATE;
+    //     // const result = await postmarkClient.sendEmailWithTemplate({
+    //     //   TemplateId: parseInt(templateId),
+    //     //   To: identifier,
+    //     //   From: provider.from,
+    //     //   TemplateModel: {
+    //     //     action_url: url,
+    //     //     product_name: siteConfig.name,
+    //     //   },
+    //     //   Headers: [
+    //     //     {
+    //     //       // Set this to prevent Gmail from threading emails.
+    //     //       // See https://stackoverflow.com/questions/23434110/force-emails-not-to-be-grouped-into-conversations/25435722.
+    //     //       Name: "X-Entity-Ref-ID",
+    //     //       Value: new Date().getTime() + "",
+    //     //     },
+    //     //   ],
+    //     // });
 
-        // if (result.ErrorCode) {
-        //   throw new Error(result.Message);
-        // }
-      },
-    }),
+    //     // if (result.ErrorCode) {
+    //     //   throw new Error(result.Message);
+    //     // }
+    //   },
+    // }),
   ],
   callbacks: {
     async session({ token, session }) {
