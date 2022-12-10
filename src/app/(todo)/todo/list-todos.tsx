@@ -16,10 +16,10 @@ export const ListTodos = ({ todos }: { todos: TodoSerialize[] }) => {
   if (!todos || todos.length === 0) return <p>No todos</p>;
 
   return (
-    <div>
+    <div className="">
       <div
-        className={cn("mb-4 rounded bg-green-100 py-4", {
-          "bg-green-300": filter,
+        className={cn("mb-4 rounded bg-white/10 py-4", {
+          "bg-white/20": filter,
         })}
       >
         <input type="checkbox" className="ml-3 mr-2" onChange={applyFilter} />{" "}

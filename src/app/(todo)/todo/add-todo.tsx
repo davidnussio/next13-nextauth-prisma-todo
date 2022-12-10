@@ -45,7 +45,7 @@ export default function AddTodo() {
   return (
     <div className="flex space-x-2 pb-4">
       <input
-        className="grow rounded border-2 border-purple-500 p-2 disabled:bg-gray-400 disabled:text-slate-200"
+        className="grow rounded border-2 border-purple-500 p-2 disabled:bg-white/40"
         ref={(ref) => {
           inputRef.current = ref;
           inputRef.current?.focus();
@@ -57,7 +57,7 @@ export default function AddTodo() {
         disabled={isMutating}
       />
       <button
-        className="rounded border border-slate-500 bg-slate-200 p-2 disabled:bg-gray-400 disabled:text-slate-200"
+        className="disabled:text-white-300 rounded border-2 border-purple-500 bg-white/10 p-2 disabled:bg-white/40"
         onClick={addTodo}
         disabled={isMutating}
       >

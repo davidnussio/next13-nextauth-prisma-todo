@@ -33,11 +33,11 @@ export default function Todo(todo: TodoSerialize) {
     <li
       className={cn(
         "rounded py-4",
-        isMutating ? "animate-pulse bg-gray-200" : "bg-green-200"
+        isMutating ? "animate-pulse bg-white/20" : "bg-white/10"
       )}
     >
       <div className="ml-3 flex">
-        <p className="text-sm font-medium text-gray-900">
+        <p className="text-sm font-medium ">
           <input
             disabled={isMutating}
             className="mr-2"
@@ -47,13 +47,17 @@ export default function Todo(todo: TodoSerialize) {
           />
         </p>
         <p
-          className={cn("grow text-sm text-gray-500", {
+          className={cn("grow text-sm", {
             "line-through": todo.completed,
           })}
         >
           {todo.title}
         </p>
-        <p className="text-sm text-gray-500">
+        <p
+          className={cn("text-sm", {
+            "line-through": todo.completed,
+          })}
+        >
           {new Intl.DateTimeFormat("it-CH", {
             hour: "numeric",
             minute: "numeric",
