@@ -4,7 +4,6 @@ import { signIn } from "next-auth/react";
 
 const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    await fetch("/api/c");
     e.preventDefault();
     const form = e.currentTarget;
     const email = form.elements.namedItem("email") as HTMLInputElement;
@@ -13,7 +12,7 @@ const LoginForm = () => {
     signIn("credentials", {
       email: email.value,
       password: password.value,
-      callbackUrl: "/",
+      // callbackUrl: "http://localhost:3000/",
     });
   };
 

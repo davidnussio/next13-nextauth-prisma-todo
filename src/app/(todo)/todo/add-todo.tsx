@@ -45,7 +45,7 @@ export default function AddTodo() {
   return (
     <div className="flex space-x-2 pb-4">
       <input
-        className="grow rounded border-2 border-purple-500 p-2 disabled:bg-white/40"
+        className="grow rounded border-2 border-purple-500 p-2 text-black/90 disabled:bg-white/40"
         ref={(ref) => {
           inputRef.current = ref;
           inputRef.current?.focus();
