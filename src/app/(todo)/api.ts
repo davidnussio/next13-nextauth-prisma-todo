@@ -4,6 +4,7 @@ import { prisma } from "~/server/db/client";
 export type TodoSerialize = Omit<Todo, "createdAt" | "updatedAt"> & {
   createdAt: string;
   updatedAt: string;
+  saving?: boolean;
 };
 
 export const getAuthorTodos = async (

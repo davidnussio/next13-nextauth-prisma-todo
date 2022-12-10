@@ -1,36 +1,53 @@
 "use client";
 
-import ky from "ky";
-import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useSession } from "next-auth/react";
+import { useRef, useState } from "react";
+import { useSWRConfig } from "swr";
+import type { TodoSerialize } from "../api";
 
 async function update(value: string) {
-  // Refresh the current route and fetch new data from the server
-  await ky.post("/api/todo", { json: { title: value } });
+  await fetch("/api/todo", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ title: value }),
+  });
 }
 
 export default function AddTodo() {
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
+
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [value, setValue] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const [isFetching, setIsFetching] = useState(false);
-
-  const isMutating = isFetching || isPending;
 
   const changeInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
   };
 
   const addTodo = async () => {
+    const title = value.trim();
     setValue("");
-    setIsFetching(true);
-    await update(value.trim());
-    setIsFetching(false);
-    startTransition(() => {
-      router.refresh();
-      inputRef.current?.focus();
-    });
+
+    mutate(
+      "/api/todo",
+      async () => {
+        await update(title);
+      },
+      {
+        optimisticData: (current: TodoSerialize[]) => {
+          const newItem: TodoSerialize = {
+            title: title + " (saving...)",
+            completed: false,
+            id: "null",
+            authorId: "null",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          return [newItem].concat(current);
+        },
+      }
+    );
   };
 
   // Filter key down event to only allow enter key
@@ -54,12 +71,10 @@ export default function AddTodo() {
         onChange={changeInputValue}
         onKeyDown={filterKeyDown(["Enter"], addTodo)}
         value={value}
-        disabled={isMutating}
       />
       <button
         className="disabled:text-white-300 rounded border-2 border-purple-500 bg-white/10 p-2 disabled:bg-white/40"
         onClick={addTodo}
-        disabled={isMutating}
       >
         Add Todo
       </button>

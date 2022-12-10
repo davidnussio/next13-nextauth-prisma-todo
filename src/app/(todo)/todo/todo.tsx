@@ -1,32 +1,45 @@
 "use client";
 
-import ky from "ky";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useSWRConfig } from "swr";
 import { cn } from "~/lib/utils";
 import type { TodoSerialize } from "../api";
-async function update(id: string, completed: boolean, callback?: () => void) {
-  await ky.patch(`/api/todo/${id}`, { json: { completed } });
-  if (typeof callback === "function") {
-    callback();
-  }
+async function update(id: string, completed: boolean) {
+  await fetch(`/api/todo/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ completed }),
+  });
 }
 
 export default function Todo(todo: TodoSerialize) {
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
 
-  const [isPending, startTransition] = useTransition();
-  const [isFetching, setIsFetching] = useState(false);
-
-  const isMutating = isFetching || isPending;
+  const isMutating = todo?.saving ?? false;
 
   async function handleChange() {
-    setIsFetching(true);
-    await update(todo.id, !todo.completed);
-    setIsFetching(false);
-    startTransition(() => {
-      router.refresh();
-    });
+    mutate(
+      "/api/todo",
+      async () => {
+        console.log("mutate");
+        await update(todo.id, !todo.completed);
+      },
+      {
+        optimisticData: (current: TodoSerialize[]) => {
+          return current.map((item) => {
+            if (item.id === todo.id) {
+              return {
+                ...item,
+                title: item.title,
+                saving: true,
+              };
+            }
+            return item;
+          });
+        },
+      }
+    );
   }
 
   return (

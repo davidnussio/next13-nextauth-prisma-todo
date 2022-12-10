@@ -1,29 +1,44 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
 import { cn } from "~/lib/utils";
 import type { TodoSerialize } from "../api";
 import Todo from "./todo";
 
-export const ListTodos = ({ todos }: { todos: TodoSerialize[] }) => {
+const fetchTodo = async () => {
+  const res = await fetch("/api/todo");
+  const data = await res.json();
+  return data;
+};
+
+export const ListTodos = () => {
+  const { isLoading, isValidating, data } = useSWR("/api/todo", fetchTodo, {
+    keepPreviousData: true,
+  });
   const [filter, setFilter] = useState(false);
 
   const applyFilter = () => setFilter(!filter);
 
-  const filteredTodos = (todos: TodoSerialize[]) =>
-    filter ? todos.filter((todo) => !todo.completed) : todos;
+  const todos = data || [];
 
-  if (!todos || todos.length === 0) return <p>No todos</p>;
+  console.log({ isLoading, isValidating, todosLength: todos?.length, todos });
+
+  if (todos.length === 0) return <p>No todos</p>;
+
+  const filteredTodos = (todos: TodoSerialize[]) =>
+    filter ? todos?.filter((todo) => !todo.completed) : todos;
 
   return (
-    <div className="">
+    <div className="w-96">
       <div
         className={cn("mb-4 rounded bg-white/10 py-4", {
-          "bg-white/20": filter,
+          "bg-red-500/20": filter,
         })}
       >
-        <input type="checkbox" className="ml-3 mr-2" onChange={applyFilter} />{" "}
-        Show only incomplete todos
+        <button type="button" className="w-full" onClick={applyFilter}>
+          {filter ? "Show only incomplete todos" : "Show all todo"}
+        </button>
       </div>
       <ul role="list" className="flex flex-col space-y-2">
         {filteredTodos(todos).map((todo) => (

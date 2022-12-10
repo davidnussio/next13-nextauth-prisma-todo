@@ -11,6 +11,9 @@ const handler = authApi()
       where: {
         authorId: userId,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
     res.json(data);
   })

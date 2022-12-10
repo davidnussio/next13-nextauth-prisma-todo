@@ -7,24 +7,60 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 import { env } from "../../../env/server.mjs";
 import { prisma } from "../../../server/db/client";
+import type { Provider } from "next-auth/providers/index.js";
 
-export const authOptions: NextAuthOptions = {
-  // huh any! I know.
-  // This is a temporary fix for prisma client.
-  // @see https://github.com/prisma/prisma/issues/16117
-  adapter: PrismaAdapter(prisma),
-  debug: true,
-  session: {
-    strategy: "jwt",
-  },
-  // pages: {
-  //   signIn: "/login",
-  // },
-  providers: [
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    }),
+const providers: Provider[] = [
+  GoogleProvider({
+    clientId: env.GOOGLE_ID,
+    clientSecret: env.GOOGLE_SECRET,
+  }),
+  EmailProvider({
+    from: process.env.SMTP_FROM,
+    sendVerificationRequest: async ({ identifier, url, provider }) => {
+      // const user = await prisma.user.findUnique({
+      //   where: {
+      //     email: identifier,
+      //   },
+      //   select: {
+      //     emailVerified: true,
+      //   },
+      // });
+
+      // console.log("user", user);
+      console.log("identifier", identifier);
+      console.log(url);
+      // console.log("provider", provider);
+
+      // const templateId = user?.emailVerified
+      //   ? process.env.POSTMARK_SIGN_IN_TEMPLATE
+      //   : process.env.POSTMARK_ACTIVATION_TEMPLATE;
+      // const result = await postmarkClient.sendEmailWithTemplate({
+      //   TemplateId: parseInt(templateId),
+      //   To: identifier,
+      //   From: provider.from,
+      //   TemplateModel: {
+      //     action_url: url,
+      //     product_name: siteConfig.name,
+      //   },
+      //   Headers: [
+      //     {
+      //       // Set this to prevent Gmail from threading emails.
+      //       // See https://stackoverflow.com/questions/23434110/force-emails-not-to-be-grouped-into-conversations/25435722.
+      //       Name: "X-Entity-Ref-ID",
+      //       Value: new Date().getTime() + "",
+      //     },
+      //   ],
+      // });
+
+      // if (result.ErrorCode) {
+      //   throw new Error(result.Message);
+      // }
+    },
+  }),
+];
+
+if (env.FAKE_LOGIN === "true") {
+  providers.push(
     CredentialsProvider({
       // The name to display on the sign in form (e.g. "Sign in with...")
       name: "email-password-credentials",
@@ -79,51 +115,23 @@ export const authOptions: NextAuthOptions = {
           // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
         }
       },
-    }),
-    EmailProvider({
-      from: process.env.SMTP_FROM,
-      sendVerificationRequest: async ({ identifier, url, provider }) => {
-        // const user = await prisma.user.findUnique({
-        //   where: {
-        //     email: identifier,
-        //   },
-        //   select: {
-        //     emailVerified: true,
-        //   },
-        // });
+    })
+  );
+}
 
-        // console.log("user", user);
-        console.log("identifier", identifier);
-        console.log(url);
-        // console.log("provider", provider);
-
-        // const templateId = user?.emailVerified
-        //   ? process.env.POSTMARK_SIGN_IN_TEMPLATE
-        //   : process.env.POSTMARK_ACTIVATION_TEMPLATE;
-        // const result = await postmarkClient.sendEmailWithTemplate({
-        //   TemplateId: parseInt(templateId),
-        //   To: identifier,
-        //   From: provider.from,
-        //   TemplateModel: {
-        //     action_url: url,
-        //     product_name: siteConfig.name,
-        //   },
-        //   Headers: [
-        //     {
-        //       // Set this to prevent Gmail from threading emails.
-        //       // See https://stackoverflow.com/questions/23434110/force-emails-not-to-be-grouped-into-conversations/25435722.
-        //       Name: "X-Entity-Ref-ID",
-        //       Value: new Date().getTime() + "",
-        //     },
-        //   ],
-        // });
-
-        // if (result.ErrorCode) {
-        //   throw new Error(result.Message);
-        // }
-      },
-    }),
-  ],
+export const authOptions: NextAuthOptions = {
+  // huh any! I know.
+  // This is a temporary fix for prisma client.
+  // @see https://github.com/prisma/prisma/issues/16117
+  adapter: PrismaAdapter(prisma),
+  debug: true,
+  session: {
+    strategy: "jwt",
+  },
+  // pages: {
+  //   signIn: "/login",
+  // },
+  providers,
   callbacks: {
     async session({ token, session }) {
       console.log("session", token, session);
@@ -136,26 +144,26 @@ export const authOptions: NextAuthOptions = {
 
       return session;
     },
-    async jwt({ token, user }) {
-      console.log("jwt", token, user);
-      const dbUser = await prisma.user.findFirst({
-        where: {
-          email: token.email,
-        },
-      });
+    // async jwt({ token, user }) {
+    //   console.log("jwt", token, user);
+    //   const dbUser = await prisma.user.findFirst({
+    //     where: {
+    //       email: token.email,
+    //     },
+    //   });
 
-      if (!dbUser) {
-        token.id = user?.id;
-        return token;
-      }
+    //   if (!dbUser) {
+    //     token.id = user?.id;
+    //     return token;
+    //   }
 
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        picture: dbUser.image,
-      };
-    },
+    //   return {
+    //     id: dbUser.id,
+    //     name: dbUser.name,
+    //     email: dbUser.email,
+    //     picture: dbUser.image,
+    //   };
+    // },
   },
 };
 
