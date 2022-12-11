@@ -69,11 +69,11 @@ export default function Todo(todo: TodoSerialize) {
         isMutating ? "animate-pulse bg-white/20" : "bg-white/10"
       )}
     >
-      <div className="ml-3 flex">
-        <p className="text-sm font-medium">
+      <div className="flex space-x-4 px-2">
+        <p>
           <input
             disabled={isMutating}
-            className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="h-6 w-6 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             type="checkbox"
             checked={todo.completed}
             onChange={handleChange}
@@ -87,7 +87,7 @@ export default function Todo(todo: TodoSerialize) {
           {todo.title}
         </p>
         <p
-          className={cn("text-sm", {
+          className={cn("text-xs text-white/60", {
             "line-through": todo.completed,
           })}
         >

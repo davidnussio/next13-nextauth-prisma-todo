@@ -60,7 +60,7 @@ export default function AddTodo() {
     };
 
   return (
-    <div className="flex space-x-2 pb-4">
+    <div className="flex flex-col space-y-2 pb-4 sm:flex-row sm:space-y-0 sm:space-x-2">
       <input
         className="grow rounded border-2 border-purple-500 p-2 text-black/90 disabled:bg-white/40"
         ref={(ref) => {

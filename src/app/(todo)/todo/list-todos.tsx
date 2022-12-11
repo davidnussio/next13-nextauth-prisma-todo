@@ -23,19 +23,24 @@ export const ListTodos = () => {
 
   const todos = data || [];
 
-  if (todos.length === 0) return <p>{isLoading ? "Loading..." : "No todos"}</p>;
+  if (todos.length === 0)
+    return (
+      <p className="py-4 text-center text-xl">
+        {isLoading ? "Loading..." : "No todos"}
+      </p>
+    );
 
   const filteredTodos = (todos: TodoSerialize[]) =>
     filter ? todos?.filter((todo) => !todo.completed || todo.saving) : todos;
 
   return (
-    <div className="w-96">
-      <div
-        className={cn("mb-4 rounded bg-white/10 py-4", {
-          "bg-red-500/20": filter,
-        })}
-      >
-        <button type="button" className="w-full" onClick={applyFilter}>
+    <>
+      <div className="mb-4">
+        <button
+          type="button"
+          className="disabled:text-white-300 w-full rounded border-2 border-purple-500 bg-white/10 p-2 disabled:bg-white/40"
+          onClick={applyFilter}
+        >
           {filter ? "Show only incomplete todos" : "Show all todo"}
         </button>
       </div>
@@ -44,6 +49,6 @@ export const ListTodos = () => {
           <Todo key={todo.id} {...todo} />
         ))}
       </ul>
-    </div>
+    </>
   );
 };
