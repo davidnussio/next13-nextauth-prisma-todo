@@ -13,8 +13,9 @@ const fetchTodo = async () => {
 };
 
 export const ListTodos = () => {
-  const { isLoading, isValidating, data } = useSWR("/api/todo", fetchTodo, {
+  const { isLoading, data } = useSWR("/api/todo", fetchTodo, {
     keepPreviousData: true,
+    revalidateOnFocus: false,
   });
   const [filter, setFilter] = useState(false);
 
@@ -22,12 +23,10 @@ export const ListTodos = () => {
 
   const todos = data || [];
 
-  console.log({ isLoading, isValidating, todosLength: todos?.length, todos });
-
-  if (todos.length === 0) return <p>No todos</p>;
+  if (todos.length === 0) return <p>{isLoading ? "Loading..." : "No todos"}</p>;
 
   const filteredTodos = (todos: TodoSerialize[]) =>
-    filter ? todos?.filter((todo) => !todo.completed) : todos;
+    filter ? todos?.filter((todo) => !todo.completed || todo.saving) : todos;
 
   return (
     <div className="w-96">

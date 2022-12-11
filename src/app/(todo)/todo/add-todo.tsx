@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
 import { useSWRConfig } from "swr";
 import type { TodoSerialize } from "../api";
@@ -37,14 +36,15 @@ export default function AddTodo() {
       {
         optimisticData: (current: TodoSerialize[]) => {
           const newItem: TodoSerialize = {
-            title: title + " (saving...)",
+            title: title,
             completed: false,
+            saving: true,
             id: "null",
             authorId: "null",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          return [newItem].concat(current);
+          return [newItem, ...current];
         },
       }
     );

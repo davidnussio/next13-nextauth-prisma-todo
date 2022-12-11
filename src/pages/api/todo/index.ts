@@ -19,6 +19,7 @@ const handler = authApi()
   })
   .use(validate(z.object({ body: z.object({ title: z.string() }) })))
   .post(async (req, res) => {
+    console.log("req.session", req.session);
     const userId = req.session?.user?.id;
     const { title } = req.body;
 

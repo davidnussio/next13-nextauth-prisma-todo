@@ -124,17 +124,19 @@ export const authOptions: NextAuthOptions = {
   // This is a temporary fix for prisma client.
   // @see https://github.com/prisma/prisma/issues/16117
   adapter: PrismaAdapter(prisma),
-  debug: true,
+  debug: false,
   session: {
     strategy: "jwt",
   },
   // pages: {
   //   signIn: "/login",
   // },
+  theme: {
+    colorScheme: "dark",
+  },
   providers,
   callbacks: {
     async session({ token, session }) {
-      console.log("session", token, session);
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name;
@@ -144,26 +146,14 @@ export const authOptions: NextAuthOptions = {
 
       return session;
     },
-    // async jwt({ token, user }) {
-    //   console.log("jwt", token, user);
-    //   const dbUser = await prisma.user.findFirst({
-    //     where: {
-    //       email: token.email,
-    //     },
-    //   });
+    async jwt({ token, user }) {
+      // Frist time this function pass user, add user id to token
+      if (user) {
+        token.id = user.id;
+      }
 
-    //   if (!dbUser) {
-    //     token.id = user?.id;
-    //     return token;
-    //   }
-
-    //   return {
-    //     id: dbUser.id,
-    //     name: dbUser.name,
-    //     email: dbUser.email,
-    //     picture: dbUser.image,
-    //   };
-    // },
+      return token;
+    },
   },
 };
 

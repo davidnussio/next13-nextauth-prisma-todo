@@ -1,45 +1,65 @@
 "use client";
 
+import { useDeferredValue, useState, useTransition } from "react";
 import { useSWRConfig } from "swr";
 import { cn } from "~/lib/utils";
 import type { TodoSerialize } from "../api";
 async function update(id: string, completed: boolean) {
-  await fetch(`/api/todo/${id}`, {
+  const res = await fetch(`/api/todo/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ completed }),
   });
+
+  return await res.json();
 }
 
 export default function Todo(todo: TodoSerialize) {
   const { mutate } = useSWRConfig();
+  const [isMutating, setIsMutating] = useState(false);
+  const [currentUpdateAt, setCurrentUpdateAt] = useState(todo.updatedAt);
 
-  const isMutating = todo?.saving ?? false;
+  if (currentUpdateAt !== todo.updatedAt) {
+    console.log(
+      "stale object",
+
+      todo.updatedAt,
+      todo
+    );
+    setCurrentUpdateAt(todo.updatedAt);
+    setIsMutating(false);
+  }
 
   async function handleChange() {
-    mutate(
-      "/api/todo",
-      async () => {
-        console.log("mutate");
-        await update(todo.id, !todo.completed);
-      },
-      {
-        optimisticData: (current: TodoSerialize[]) => {
-          return current.map((item) => {
-            if (item.id === todo.id) {
-              return {
-                ...item,
-                title: item.title,
-                saving: true,
-              };
-            }
-            return item;
-          });
-        },
-      }
-    );
+    try {
+      setIsMutating(true);
+      await mutate(
+        "/api/todo",
+        async () => {
+          await update(todo.id, !todo.completed);
+        }
+        // {
+        //   optimisticData: (current: TodoSerialize[]) => {
+        //     return current.map((item) => {
+        //       if (item.id === todo.id) {
+        //         return {
+        //           ...item,
+        //           title: item.title,
+        //           saving: true,
+        //           completed: !item.completed,
+        //         };
+        //       }
+        //       return item;
+        //     });
+        //   },
+        // }
+      );
+    } catch (e) {
+      console.error("error", e);
+      setIsMutating(false);
+    }
   }
 
   return (
@@ -50,10 +70,10 @@ export default function Todo(todo: TodoSerialize) {
       )}
     >
       <div className="ml-3 flex">
-        <p className="text-sm font-medium ">
+        <p className="text-sm font-medium">
           <input
             disabled={isMutating}
-            className="mr-2"
+            className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             type="checkbox"
             checked={todo.completed}
             onChange={handleChange}
@@ -78,6 +98,7 @@ export default function Todo(todo: TodoSerialize) {
           }).format(new Date(todo.createdAt))}
         </p>
       </div>
+      {/* <div className="ml-3 h-4 text-xs">{todo.saving && "saving..."}</div> */}
     </li>
   );
 }
