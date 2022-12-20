@@ -8,6 +8,8 @@ import { z } from "zod";
 import { authOptions } from "../auth/[...nextauth]";
 import type { Session } from "next-auth";
 import { unstable_getServerSession } from "next-auth";
+import { env } from "~/env/server.mjs";
+import { createHash } from "crypto";
 
 type NextApiRequestWithSession = NextApiRequest & {
   session?: Session;
@@ -50,6 +52,52 @@ export const useAuth = async (
     return next();
   }
   res.status(401).end("Unauthorized");
+};
+export const verifyNextAuthCsrfToken = (
+  req: NextApiRequestWithSession,
+  res: NextApiResponse,
+  next: NextHandler
+) => {
+  const secret = env.NEXTAUTH_SECRET;
+  const csrfMethods = ["POST", "PUT", "PATCH", "DELETE"];
+  const method = req.method || "";
+  const tokenToCheck = req.body.csrfToken || req.query.csrfToken || "";
+
+  console.log("- tokenToCheck", tokenToCheck);
+  console.log("- method", method);
+
+  if (!csrfMethods.includes(method)) {
+    // we dont need to check the CSRF if it's not within the method.
+    return next();
+  }
+
+  try {
+    const useSecureCookies = req.url?.startsWith("https://");
+    const csrfProp = `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`;
+    console.log("- csrfProp", csrfProp);
+    if (req.cookies[csrfProp]) {
+      console.log("- req.cookies[csrfProp]", req.cookies[csrfProp]);
+      const cookieValue = req.cookies[csrfProp] || "";
+      const cookieSplitKey = cookieValue.match("|") ? "|" : "%7C";
+
+      const [csrfTokenValue, csrfTokenHash] = cookieValue.split(cookieSplitKey);
+
+      console.log("- csrfTokenValue", csrfTokenValue);
+      console.log("- csrfTokenHash", csrfTokenHash);
+      const generatedHash = createHash("sha256")
+        .update(`${tokenToCheck}${secret}`)
+        .digest("hex");
+
+      if (csrfTokenHash === generatedHash) {
+        // If hash matches then we trust the CSRF token value
+        if (csrfTokenValue === tokenToCheck) return next();
+      }
+    }
+  } catch (error) {
+    console.error("Error verifying CSRF token", error);
+  } finally {
+    return res.status(401).end("Unauthorized");
+  }
 };
 
 export const api = () =>

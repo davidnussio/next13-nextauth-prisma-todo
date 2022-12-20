@@ -1,10 +1,8 @@
-import type { User } from "@prisma/client";
 import Link from "next/link";
-import { getCurrentUser } from "~/server/common/get-server-auth-session";
-import LoginButton from "./login-button";
+import { Suspense } from "react";
+import { LoginComponent } from "./login-component";
 
 const Home = async () => {
-  const user = (await getCurrentUser()) as User;
   return (
     <main className="flex min-h-screen flex-col items-center justify-center">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
@@ -24,7 +22,10 @@ const Home = async () => {
           </Link>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <LoginButton user={user} />
+          <Suspense fallback={<div>loading...</div>}>
+            {/* @ts-expect-error Async Server Component */}
+            <LoginComponent />
+          </Suspense>
         </div>
       </div>
     </main>

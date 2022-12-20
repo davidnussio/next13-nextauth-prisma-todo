@@ -1,19 +1,9 @@
-import { redirect } from "next/navigation";
-
-import LoginButton from "~/app/login-button";
-import { getCurrentUser } from "~/server/common/get-server-auth-session";
 import LoginForm from "./login-form";
+
+import VerificationCodeFlow from "./sms-code";
 
 // Login page
 export default async function LoginPage() {
-  // Get current user
-  const user = await getCurrentUser();
-
-  // If user is logged in, redirect to home page
-  if (user) {
-    redirect("/");
-  }
-
   // Return login page
   return (
     <div className="mx-auto flex max-w-md flex-col">
@@ -21,7 +11,9 @@ export default async function LoginPage() {
         Login
       </h1>
       <LoginForm />
-      <LoginButton user={user} />
+      <hr className="my-4 border-white/40" />
+      <h2>Code auth</h2>
+      <VerificationCodeFlow />
     </div>
   );
 }
