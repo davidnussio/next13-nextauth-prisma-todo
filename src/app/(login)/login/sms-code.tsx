@@ -7,9 +7,12 @@ import VerificationCode from "./verification-code";
 
 export default function VerificationCodeFlow() {
   const [hasStartedVerification, setHasStartedVerification] = useState(false);
-  const [credentials, setCredentials] = useState();
+  const [credentials, setCredentials] = useState<{
+    email: string;
+    token: string;
+  }>();
 
-  const startVerification = async ({ email, recaptcha }) => {
+  const startVerification = async ({ email, recaptcha }: any) => {
     const csrfToken = await getCsrfToken();
 
     const response = await fetch("/api/auth-verification/code", {
@@ -22,7 +25,7 @@ export default function VerificationCodeFlow() {
     setHasStartedVerification(true);
   };
 
-  const checkVerification = async ({ verificationCode }) => {
+  const checkVerification = async ({ verificationCode }: any) => {
     await signIn("credentials", { ...credentials, verificationCode });
   };
 

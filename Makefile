@@ -26,5 +26,8 @@ stop-database:
 dev: start-database
 	npx turbo dev 
 
+build:
+	npx turbo build
+
 clean:
 	rm -rf .next node_modules .turbo playwright-report

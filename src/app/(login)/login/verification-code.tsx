@@ -1,8 +1,8 @@
 import { Button } from "~/ui/button";
 import { FormInput } from "~/ui/form-input";
 
-export default function EmailInput({ onSubmit }) {
-  const handleSubmit = async (event) => {
+export default function EmailInput({ onSubmit }: any) {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
     const form = event.currentTarget;
     const verificationCode = form.elements.namedItem(

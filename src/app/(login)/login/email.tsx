@@ -4,8 +4,10 @@ import { Button } from "~/ui/button";
 import { FormInput } from "~/ui/form-input";
 import { env } from "~/env/client.mjs";
 
-export default function EmailInput({ onSubmit }) {
+export default function EmailInput({ onSubmit }: any) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.persist();
+    const form = event.currentTarget;
     event.preventDefault();
     grecaptcha.ready(function () {
       grecaptcha
@@ -14,7 +16,6 @@ export default function EmailInput({ onSubmit }) {
         })
         .then(function (recaptcha) {
           // Add your logic to submit to your backend server here.
-          const form = event.target;
           const email = form.elements.namedItem(
             "email-for-verification-code"
           ) as HTMLInputElement;
