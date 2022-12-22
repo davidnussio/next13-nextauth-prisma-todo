@@ -10,7 +10,7 @@ export default async function Header() {
 
   return (
     <header className="flex items-center justify-between bg-white/10 p-3">
-      <Link href="/" className="text-xl font-bold">
+      <Link href="/" prefetch={false} className="text-xl font-bold">
         Home
       </Link>
       {user ? <ProtectedHeader /> : <PublicHeader />}
