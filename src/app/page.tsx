@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { LoginComponent } from "./login-component";
 
@@ -11,15 +10,12 @@ const Home = async () => {
           App
         </h1>
         <div className="grid grid-cols-1 gap-4 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="/todo"
-          >
+          <div className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20">
             <h3 className="text-2xl font-bold">Todo</h3>
             <div className="text-lg">
               Just the basics - Everything you need to do, here.
             </div>
-          </Link>
+          </div>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Suspense fallback={<div>loading...</div>}>

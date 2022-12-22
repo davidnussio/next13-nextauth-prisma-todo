@@ -1,11 +1,12 @@
 "use client";
 
-import { useDeferredValue, useState, useTransition } from "react";
-import { useSWRConfig } from "swr";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { cn } from "~/lib/utils";
 import type { TodoSerialize } from "../api";
-async function update(id: string, completed: boolean) {
-  const res = await fetch(`/api/todo/${id}`, {
+
+async function updateTodo({ id, completed }: TodoSerialize) {
+  const response = await fetch(`/api/todo/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -13,66 +14,72 @@ async function update(id: string, completed: boolean) {
     body: JSON.stringify({ completed }),
   });
 
-  return await res.json();
-}
-
-export default function Todo(todo: TodoSerialize) {
-  const { mutate } = useSWRConfig();
-  const [isMutating, setIsMutating] = useState(false);
-  const [currentUpdateAt, setCurrentUpdateAt] = useState(todo.updatedAt);
-
-  if (currentUpdateAt !== todo.updatedAt) {
-    console.log(
-      "stale object",
-
-      todo.updatedAt,
-      todo
-    );
-    setCurrentUpdateAt(todo.updatedAt);
-    setIsMutating(false);
+  if (!response.ok) {
+    throw new Error("");
   }
 
+  return await response.json();
+}
+
+const useTodoMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateTodo,
+    // When mutate is called:
+    onMutate: async (todo: TodoSerialize) => {
+      // Cancel any outgoing refetches
+      // (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ["todos"] });
+
+      // Snapshot the previous value
+      const previousTodos = queryClient.getQueryData<TodoSerialize[]>([
+        "todos",
+      ]);
+
+      const nextTodos = Array.isArray(previousTodos)
+        ? previousTodos.map((it) => (it.id === todo.id ? todo : it))
+        : [todo];
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(["todos"], nextTodos);
+
+      // Return a context object with the snapshotted value
+      // return { oldTodo: previousTodos.find((todo) => todo.id === newTodo.id) };
+      return { previousTodos };
+    },
+    // If the mutation fails,
+    // use the context returned from onMutate to roll back
+    onError: (err, newTodo, context) => {
+      console.log("ERRORE", err, { newTodo }, { context });
+      queryClient.setQueryData(["todos"], context?.previousTodos || []);
+    },
+    // Always refetch after error or success:
+    onSettled: () => {
+      console.log("onSettled");
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+    },
+  });
+};
+
+export default function Todo(todo: TodoSerialize) {
+  const mutation = useTodoMutation();
+
   async function handleChange() {
-    try {
-      setIsMutating(true);
-      await mutate(
-        "/api/todo",
-        async () => {
-          await update(todo.id, !todo.completed);
-        }
-        // {
-        //   optimisticData: (current: TodoSerialize[]) => {
-        //     return current.map((item) => {
-        //       if (item.id === todo.id) {
-        //         return {
-        //           ...item,
-        //           title: item.title,
-        //           saving: true,
-        //           completed: !item.completed,
-        //         };
-        //       }
-        //       return item;
-        //     });
-        //   },
-        // }
-      );
-    } catch (e) {
-      console.error("error", e);
-      setIsMutating(false);
-    }
+    mutation.mutate({ ...todo, completed: !todo.completed });
   }
 
   return (
     <li
       className={cn(
         "rounded py-4",
-        isMutating ? "animate-pulse bg-white/20" : "bg-white/10"
+        mutation.isLoading ? "animate-pulse bg-white/20" : "bg-white/10"
       )}
     >
       <div className="flex space-x-4 px-2">
         <p>
           <input
-            disabled={isMutating}
+            disabled={mutation.isLoading}
             className="h-6 w-6 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             type="checkbox"
             checked={todo.completed}

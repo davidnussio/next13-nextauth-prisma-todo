@@ -4,7 +4,9 @@ import { api, verifyNextAuthCsrfToken } from "../todo/[id]";
 export default api()
   .use(verifyNextAuthCsrfToken)
   .post(async (req, res) => {
-    const { email } = req.body.email;
+    const { email } = req.body;
+
+    console.log("email", email);
     console.log(req.body.recaptcha);
 
     console.log(env.RECAPTCHA_KEY);

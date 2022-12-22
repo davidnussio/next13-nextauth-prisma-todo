@@ -1,21 +1,20 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import useSWR from "swr";
-import { cn } from "~/lib/utils";
 import type { TodoSerialize } from "../api";
 import Todo from "./todo";
 
-const fetchTodo = async () => {
+const getTodos = async () => {
   const res = await fetch("/api/todo");
   const data = await res.json();
   return data;
 };
 
 export const ListTodos = () => {
-  const { isLoading, data } = useSWR("/api/todo", fetchTodo, {
-    keepPreviousData: true,
-    revalidateOnFocus: false,
+  const { isLoading, data } = useQuery({
+    queryKey: ["todos"],
+    queryFn: getTodos,
   });
   const [filter, setFilter] = useState(false);
 

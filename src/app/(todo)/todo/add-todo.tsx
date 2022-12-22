@@ -1,21 +1,67 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { useSWRConfig } from "swr";
 import type { TodoSerialize } from "../api";
 
-async function update(value: string) {
-  await fetch("/api/todo", {
+async function updateTodo(newTodos: TodoSerialize): Promise<TodoSerialize> {
+  return fetch("/api/todo", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ title: value }),
+    body: JSON.stringify({ title: newTodos.title }),
+  }).then((response) => {
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error("Error");
   });
 }
 
+const useTodoMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateTodo,
+    // When mutate is called:
+    onMutate: async (newTodos: TodoSerialize) => {
+      // Cancel any outgoing refetches
+      // (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ["todos"] });
+
+      // Snapshot the previous value
+      const previousTodos = queryClient.getQueryData<TodoSerialize[]>([
+        "todos",
+      ]);
+
+      const nextTodos = Array.isArray(previousTodos)
+        ? [newTodos].concat(previousTodos)
+        : [newTodos];
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(["todos"], nextTodos);
+
+      // Return a context object with the snapshotted value
+      // return { oldTodo: previousTodos.find((todo) => todo.id === newTodo.id) };
+      return { previousTodos };
+    },
+    // If the mutation fails,
+    // use the context returned from onMutate to roll back
+    onError: (err, newTodo, context) => {
+      console.log("ERRORE", err, { newTodo }, { context });
+      queryClient.setQueryData(["todos"], context?.previousTodos || []);
+    },
+    // Always refetch after error or success:
+    onSettled: () => {
+      console.log("onSettled");
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+    },
+  });
+};
+
 export default function AddTodo() {
-  const { mutate } = useSWRConfig();
+  const mutation = useTodoMutation();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [value, setValue] = useState("");
@@ -25,29 +71,19 @@ export default function AddTodo() {
   };
 
   const addTodo = async () => {
-    const title = value.trim();
     setValue("");
 
-    mutate(
-      "/api/todo",
-      async () => {
-        await update(title);
-      },
-      {
-        optimisticData: (current: TodoSerialize[]) => {
-          const newItem: TodoSerialize = {
-            title: title,
-            completed: false,
-            saving: true,
-            id: "null",
-            authorId: "null",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          return [newItem, ...current];
-        },
-      }
-    );
+    const newTodos: TodoSerialize = {
+      title: value.trim(),
+      completed: false,
+      saving: true,
+      id: "null",
+      authorId: "null",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    mutation.mutate(newTodos);
   };
 
   // Filter key down event to only allow enter key

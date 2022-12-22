@@ -1,19 +1,19 @@
+import type { User } from "next-auth";
 import Link from "next/link";
+import { getCurrentUser } from "~/server/common/get-server-auth-session";
+import ProtectedHeader from "./protected-header";
+import PublicHeader from "./public-header";
 
 // next page
-export default function Header() {
-  // Create header using tailwind with links home, todo and login
+export default async function Header() {
+  const user = (await getCurrentUser()) as User;
+
   return (
     <header className="flex items-center justify-between bg-white/10 p-3">
       <Link href="/" className="text-xl font-bold">
         Home
       </Link>
-      {/* only show the Todo link if the user is logged in */}
-      {/* you will need to add logic to check if the user is logged in here */}
-      <Link href="/todo" className="text-xl font-bold">
-        Todo
-      </Link>
-      <div>{/* add an avatar image here */}avatar</div>
+      {user ? <ProtectedHeader /> : <PublicHeader />}
     </header>
   );
 }

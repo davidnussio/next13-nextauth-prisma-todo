@@ -1,7 +1,7 @@
 import { Button } from "~/ui/button";
 import { FormInput } from "~/ui/form-input";
 
-export default function EmailInput({ onSubmit }: any) {
+export default function EmailInput({ onSubmit, code }: any) {
   const handleSubmit = async (event: any) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -19,6 +19,7 @@ export default function EmailInput({ onSubmit }: any) {
           name="verficication-code"
           type="text"
           required
+          defaultValue={code}
         />
         <div className="">
           <Button type="submit" className="w-full">

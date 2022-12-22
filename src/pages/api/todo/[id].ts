@@ -33,6 +33,28 @@ export const validate =
     }
   };
 
+export const randomError =
+  (percentage = 50) =>
+  async (
+    req: NextApiRequestWithSession,
+    res: NextApiResponse,
+    next: NextHandler
+  ) => {
+    if (env.NODE_ENV === "production") {
+      return next();
+    }
+
+    const schema = z.number().min(1).max(99);
+    const errorRate = schema.parse(percentage) / 100;
+
+    if (Math.random() < errorRate) {
+      return res.status(500).json({
+        message: `Error: useRandomError use ${percentage}% of randomness to response with a 500 error`,
+      });
+    }
+    next();
+  };
+
 export const useSession = async (
   req: NextApiRequestWithSession,
   res: NextApiResponse,
@@ -63,9 +85,6 @@ export const verifyNextAuthCsrfToken = (
   const method = req.method || "";
   const tokenToCheck = req.body.csrfToken || req.query.csrfToken || "";
 
-  console.log("- tokenToCheck", tokenToCheck);
-  console.log("- method", method);
-
   if (!csrfMethods.includes(method)) {
     // we dont need to check the CSRF if it's not within the method.
     return next();
@@ -74,30 +93,27 @@ export const verifyNextAuthCsrfToken = (
   try {
     const useSecureCookies = req.url?.startsWith("https://");
     const csrfProp = `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`;
-    console.log("- csrfProp", csrfProp);
     if (req.cookies[csrfProp]) {
-      console.log("- req.cookies[csrfProp]", req.cookies[csrfProp]);
       const cookieValue = req.cookies[csrfProp] || "";
       const cookieSplitKey = cookieValue.match("|") ? "|" : "%7C";
 
       const [csrfTokenValue, csrfTokenHash] = cookieValue.split(cookieSplitKey);
 
-      console.log("- csrfTokenValue", csrfTokenValue);
-      console.log("- csrfTokenHash", csrfTokenHash);
       const generatedHash = createHash("sha256")
         .update(`${tokenToCheck}${secret}`)
         .digest("hex");
 
       if (csrfTokenHash === generatedHash) {
         // If hash matches then we trust the CSRF token value
-        if (csrfTokenValue === tokenToCheck) return next();
+        if (csrfTokenValue === tokenToCheck) {
+          return next();
+        }
       }
     }
   } catch (error) {
     console.error("Error verifying CSRF token", error);
-  } finally {
-    return res.status(401).end("Unauthorized");
   }
+  return res.status(401).end("Unauthorized");
 };
 
 export const api = () =>
@@ -114,7 +130,7 @@ export const api = () =>
 export const authApi = () => api().use(useAuth);
 
 const handler = authApi()
-  .use(
+  .patch(
     validate(
       z.object({
         query: z.object({ id: z.string() }),
@@ -124,11 +140,32 @@ const handler = authApi()
           }),
         }),
       })
-    )
+    ),
+    async (req, res) => {
+      const userId = req.session?.user?.id;
+      const { completed } = req.body;
+      const { id } = req.query as { id: string };
+
+      if (
+        (await prisma.todo.count({
+          where: {
+            id,
+            authorId: userId,
+          },
+        })) === 0
+      ) {
+        return res.status(404).end("Not found");
+      }
+
+      const todo = await prisma.todo.update({
+        data: { completed },
+        where: { id },
+      });
+      res.status(200).json(todo);
+    }
   )
-  .patch(async (req, res) => {
+  .get(async (req, res) => {
     const userId = req.session?.user?.id;
-    const { completed } = req.body;
     const { id } = req.query as { id: string };
 
     if (
@@ -142,8 +179,7 @@ const handler = authApi()
       return res.status(404).end("Not found");
     }
 
-    const todo = await prisma.todo.update({
-      data: { completed },
+    const todo = await prisma.todo.findUnique({
       where: { id },
     });
     res.status(200).json(todo);

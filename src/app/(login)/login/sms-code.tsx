@@ -20,8 +20,9 @@ export default function VerificationCodeFlow() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, csrfToken, recaptcha }),
     });
-    const token = await response.json();
-    setCredentials({ email, token });
+    const { code } = await response.json();
+    console.log(code);
+    setCredentials({ email, token: code });
     setHasStartedVerification(true);
   };
 
@@ -32,6 +33,11 @@ export default function VerificationCodeFlow() {
   if (!hasStartedVerification) {
     return <EmailInput onSubmit={startVerification} />;
   } else {
-    return <VerificationCode onSubmit={checkVerification} />;
+    return (
+      <VerificationCode
+        onSubmit={checkVerification}
+        code={credentials?.token}
+      />
+    );
   }
 }
