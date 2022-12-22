@@ -93,6 +93,7 @@ export const verifyNextAuthCsrfToken = (
   try {
     const useSecureCookies = req.url?.startsWith("https://");
     const csrfProp = `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`;
+    console.log("csrfProp", csrfProp, req.cookies[csrfProp]);
     if (req.cookies[csrfProp]) {
       const cookieValue = req.cookies[csrfProp] || "";
       const cookieSplitKey = cookieValue.match("|") ? "|" : "%7C";
@@ -103,8 +104,20 @@ export const verifyNextAuthCsrfToken = (
         .update(`${tokenToCheck}${secret}`)
         .digest("hex");
 
+      console.log("csrfTokenHash", csrfTokenHash);
+      console.log("generatedHash", generatedHash);
+      console.log(
+        "RESULT",
+        csrfTokenHash === generatedHash ? "MATCH" : "NO MATCH"
+      );
       if (csrfTokenHash === generatedHash) {
         // If hash matches then we trust the CSRF token value
+        console.log(
+          "csrfTokenValue",
+          csrfTokenValue === tokenToCheck,
+          csrfTokenValue,
+          tokenToCheck
+        );
         if (csrfTokenValue === tokenToCheck) {
           return next();
         }
@@ -113,6 +126,7 @@ export const verifyNextAuthCsrfToken = (
   } catch (error) {
     console.error("Error verifying CSRF token", error);
   }
+  console.log("CSRF token verification failed");
   return res.status(401).end("Unauthorized");
 };
 
