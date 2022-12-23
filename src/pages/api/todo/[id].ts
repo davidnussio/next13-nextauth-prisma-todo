@@ -91,11 +91,12 @@ export const verifyNextAuthCsrfToken = (
   }
 
   try {
+    console.log(req.url)
     const useSecureCookies = req.url?.startsWith("https://");
-    const csrfProp = `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`;
-    console.log("csrfProp", csrfProp, req.cookies[csrfProp]);
-    if (req.cookies[csrfProp]) {
-      const cookieValue = req.cookies[csrfProp] || "";
+    console.log("csrfProp", req.cookies["__Host-next-auth.csrf-token"], req.cookies["next-auth.csrf-token"]);
+    const cookieValue = req.cookies["__Host-next-auth.csrf-token"] || req.cookies["next-auth.csrf-token"] || "";
+
+    if (cookieValue) {
       const cookieSplitKey = cookieValue.match("|") ? "|" : "%7C";
 
       const [csrfTokenValue, csrfTokenHash] = cookieValue.split(cookieSplitKey);
