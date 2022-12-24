@@ -3,7 +3,7 @@ import LoginForm from "./login-form";
 import VerificationCodeFlow from "./sms-code";
 
 // Login page
-export default async function LoginPage() {
+export default function LoginPage() {
   // Return login page
   return (
     <div className="mx-auto flex max-w-md flex-col">
