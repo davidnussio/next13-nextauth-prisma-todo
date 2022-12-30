@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useSelectedLayoutSegment } from "next/navigation";
 
 // next page
 export default function ProtectedHeader() {
-  const router = useRouter();
+  const segment = useSelectedLayoutSegment();
 
   return (
     <>
-      {router.pathname !== "/todo" ? (
+      {segment !== "/todo" ? (
         <Link href="/todo" className="text-xl font-bold">
           Todo
         </Link>
